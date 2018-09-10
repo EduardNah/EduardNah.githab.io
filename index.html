@@ -1,175 +1,175 @@
-<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="style.css">
     <title>ReactJS</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
   </head>
   <body>
-    <div id="exemple"></div>
-    <script type="text/babel" >
+    <div id="mount-point"></div>
+    <script type="text/babel">
+      class Note extends React.Component{
+    render(){
+      let style = {backgroundColor:this.props.color}
+      return <div className="note" style={style}>
+        <span className="delete-note" onClick={this.props.onDelete}>x</span>
+        {this.props.children}
+            </div>;
+    }
+  }
+  class NoteEditor extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      text:""
      
-      var Task = React.createClass ({
-        getInitialState: function (){
-          return {edit: false}
-        },
-        edit: function () {
-          this.setState({edit: true});
-        },
-        
-        save: function() {
-          this.props.update(this.refs.newTxt.value, this.props.index);
-          this.setState({edit: false});
-        },
-        rendNorm: function (){
-          return (
-            <div className="box2">
-              <div className="text"> {this.props.children} </div>
-              <button onClick= {this.edit} className="btn light"> EDIT </button>
-            </div>
-          );
-        },
-        rendEdit: function () {
-          return (
-            <div className="box2">
-              <textarea ref="newTxt" placeholder="Enter new task" defaultValue={this.props.children}></textarea>
-              <button onClick={this.save} className="btn light">Save</button>
-            </div>
-          );
-        },
-        render: function () {
-            if (this.state.edit){
-              return this.rendEdit();
-            } else {
-              return this.rendNorm();
+    };
+  };
+  handleTextChange = (event) =>{
+    let txt= event.target.value;
+    this.setState ({text:txt});
+  };
+  handleNoteAdd =() =>{
+    let newNote = {
+      text:this.state.text,
+      color:"yellow",
+      id: Date.now()
+    };
+    this.props.onNoteAdd(newNote);
+    this.setState({text:''});
+  };
+
+    render(){
+      return <div className="note-editor">
+               <textarea 
+               placeholder="Enter your text..." rows={5} 
+               className="textarea"
+               value ={this.state.text}
+               onChange={this.handleTextChange}
+                />
+               <button className="add-button" onClick={this.handleNoteAdd}>add</button> 
+              </div>;
+    }
+  }
+  class NotesGrid extends React.Component{
+    componentDidMount(){
+    let grid = this.refs.grid
+      this.msnry = new Masonry(grid,{
+        itemSelector:".note",
+        columnWidth:220,
+        gutter:10,
+        isFitWidth:true
+    });
+    };
+
+    componentDidUpdate(prevProps){
+      if(this.props.notes.length !== prevProps.notes.length){
+          this.msnry.reloadItems();
+          this.msnry.layout();
+        }
+      }
+      newtask =(note)=>{
+      let onNoteDelete = this.props.onNoteDelete;
+                    return (<Note 
+                    key={note.id} 
+                    color={note.color}
+                    onDelete={onNoteDelete.bind(null,note)}>
+                    {note.text}
+                    </Note>
+                    );
+                  };
+    
+    render(){
+
+      return  (<div className="notes-grid" ref="grid">
+                {
+                  this.props.notes.map(this.newtask)
+                }  
+              </div>
+      );
+    }
+  }
+  class NotesApp extends React.Component{
+    constructor(props){
+    super(props);
+    this.state = {
+      notes:[{
+              id:0,
+              text:"Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi in hic expedita dolore fuga necessitatibus dolorem sit, voluptas excepturi, ipsam qui quidem molestiae, nostrum modi! Omnis sapiente, enim ex. Blanditiis? ipsum dolor sit amet", 
+              color:"#FFD700",
+            },{
+              id:1,
+              text:"Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus alias, voluptate id, maiores necessitatibus explicabo reprehenderit inventore ex consequatur! Alias aperiam porro recusandae expedita incidunt ratione et eum rem hic! ipsum dolor sit amet", 
+              color:"#F4A67F"
+            },{
+              id:2,
+              text:"Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo culpa tenetur repellat molestias hic. Enim mollitia nesciunt natus. Aperiam animi eum libero quam sint quae, non impedit sunt maiores voluptatem. ipsum dolor sit amet",
+              color:"#ffRhfg"
+            },{
+              id:3,
+              text:"Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi in hic expedita dolore fuga necessitatibus dolorem sit, voluptas excepturi, ipsam qui quidem molestiae, nostrum modi! Omnis sapiente, enim ex. Blanditiis? ipsum dolor sit amet", 
+              color:"#EEBEBE",
+            },{
+              id:4,
+              text:"Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus alias, voluptate id, maiores necessitatibus explicabo reprehenderit inventore ex consequatur! Alias aperiam porro recusandae expedita incidunt ratione et eum rem hic! ipsum dolor sit amet", 
+              color:"#A0F6C0"
+            },{
+              id:5,
+              text:"Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo culpa tenetur repellat molestias hic. Enim mollitia nesciunt natus. Aperiam animi eum libero quam sint quae, non impedit sunt maiores voluptatem. ipsum dolor sit amet",
+              color:"#FBBAF9"
             }
-        }
+        ]      
+    };
+  };
 
-      });
-      var Field = React.createClass({
-        getInitialState: function () {
-          return {
-            tasks: [
-            ]
-          }
-        },
+  componentDidMount(){
+      let localNotes = JSON.parse(localStorage.getItem('notes'));
+      if(localNotes){
+        this.setState({notes: localNotes});
+      }
+    }
 
-       
-        handleNoteAdd: function(newNote){
-          var newNotes = this.state.tasks.slice();;
-          newNotes.push(newNote);
-          this.setState({tasks:newNotes});
-        },
-        newTask: function(newNote){
-          var newNote = ["New Task"];
-          this.handleNoteAdd(newNote);
-        },
-        updateTeaxt: function (text,i){
-          var arr = this.state.tasks;
-          arr[i] = text;
-          this.setState({tasks:arr});
-        },
-        eachNew: function (item,i) {
-          return (<Task key={i} index={i} update={this.updateTeaxt} >
-                  {item}
-                  </Task>
-                  );
-          },
-        render: function (){
-          var del=this.props.deletBlock;
-          var ind=this.props.index;
-          
-          return(
-            <div className="box">
-              <div className="text">{this.props.children}</div>
-              {this.state.tasks.map (this.eachNew)}
-              <button onClick={del.bind(null,ind)} className="btn red">DELET</button>
-              <button onClick={this.newTask} className="btn red">NEW TASK</button>
-            </div>
-          );
-        }
-      });
-      
-      var Blok = React.createClass({
-        getInitialState: function () {
-          return {
-            text:"",
-            tasksN: [
-                    
-                    ]
-          }
-        },
+  componentDidUpdate (){
+  this._updateLocalStorage();
+}
 
-        deleteBlock: function(bord){
-          var bordId = bord.id;
-          var NewBordId = this.state.tasksN.filter(function(bord){
-            return bord.id !== bordId;
+  handleNoteDelete = (note) => {
+    let noteId = note.id;
+    let newNotes = this.state.notes.filter(function(note){
+      return note.id !== noteId;
+  });
+    this.setState({notes:newNotes});
+  }
 
-          });
-          this.setState({tasksN:NewBordId});
-          console.log(bordId, NewBordId);
-        },
-        add: function (text){
-          
-          var arr = this.state.tasksN.slice();
-          arr.push(text);
-          this.setState({tasksN:arr});
-        },
-        handleTextChange:function (event) {
-          this.setState({ text: event.target.value });
-        },
-        handelBord:function (){
-          var newBord = {
-            id:Date.now(),
-            text:this.state.text
-          };
-          if(this.state.text){
-            this.add(newBord);
-            this.setState({ text:''});
-          }else{alert("Enter Name");}
-          
-        },
-        
-        eachTask: function (bord) {
-          var onDeletBock= this.deleteBlock;
-          return (<Field 
-                  key={bord.id} 
-                  index={bord.id} 
-                  deletBlock={onDeletBock.bind(null,bord)}>
-                  {bord.text}
-                  </Field>
-                  );
-          },
-        render: function (){
-          return(
-          <div>
-            <div className="border-grid">
-            <textarea 
-            className="textarea" 
-            cols="30" 
-            rows="10"
-            placeholder="Enter Border name"
-            value={this.state.text}
-            onChange={this.handleTextChange}
-            >  
-            </textarea>
-            <button onClick={this.handelBord} className="btn new">New Border</button>
-            </div>
-            <div className="notes-grid">
-          
-              {this.state.tasksN.map(this.eachTask)}
-            </div>
-          </div>
-          );
-        }
-      });
+  handleNoteAdd =(newNote) =>{
+    let newNotes = this.state.notes.slice();
+    newNotes.unshift(newNote);
+    this.setState({notes: newNotes});
+  };
+    render(){
+      return  (<div className="notes-app">
+                <h2 className="app-header">New App</h2>
+                <NoteEditor onNoteAdd={this.handleNoteAdd} />
+                <NotesGrid notes={this.state.notes} onNoteDelete = {this.handleNoteDelete}/>
+              </div>
+      );
+    }
+  
+  _updateLocalStorage = () =>{
+    let notes = JSON.stringify(this.state.notes);
+    localStorage.setItem('notes', notes);
+  }
 
-      const app = document.getElementById("exemple");
-      ReactDOM.render(<Blok />,app);
+  }
 
+
+  ReactDOM.render(
+   <NotesApp />,
+   document.getElementById('mount-point') 
+  );
     </script>
 
   </body>
